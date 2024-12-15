@@ -1,19 +1,14 @@
-#include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
 
-bool isSafeWithRemoval(std::string report) {
-    bool removedOne = false;
-    std::stringstream ss(report);
-    unsigned long num = 0, lastNum = 0;
+bool isReportSafe(std::vector<long> report) {
     bool ascending = true;
+    long num = report[1];
+    long lastNum = report[0];
 
-    ss >> lastNum;
-    ss >> num;
     if (num > lastNum) {
         ascending = true;
     } else if (num < lastNum) {
@@ -22,35 +17,25 @@ bool isSafeWithRemoval(std::string report) {
         return false;
     }
 
-    do {
+    for (int i = 1; i < report.size(); ++i) {
         if (ascending) {
             if (num - lastNum > 3 || num - lastNum <= 0) {
-                if (!removedOne) {
-
-                    removedOne = true;
-                    continue;
-                } else {
-                    return false;
-                }
+                return false;
             }
         } else {
             if (lastNum - num > 3 || lastNum - num <= 0) {
-                if (!removedOne) {
-                    removedOne = true;
-                    continue;
-                } else {
-                    return false;
-                }
+                return false;
             }
         }
         lastNum = num;
-    } while (ss >> num);
+        num = report[i + 1];
+    };
 
     return true;
 }
 
 int main() {
-    std::ifstream fstream("./small-input.txt");
+    std::ifstream fstream("./input.txt");
     if (!fstream) {
         std::cerr << "Couldn't find input file \n";
     }
@@ -59,9 +44,28 @@ int main() {
     unsigned safeReports = 0;
     unsigned lines = 0;
     while (std::getline(fstream, line)) {
-        if (isSafeWithRemoval(line)) {
-            ++safeReports;
+        std::stringstream ss(line);
+        std::vector<long> nums;
+        long num;
+        while (ss >> num) {
+            nums.push_back(num);
         }
+
+        if (isReportSafe(nums)) {
+            ++safeReports;
+        } else {
+
+            for (int i = 0; i < nums.size(); ++i) {
+                std::vector<long> testNums = nums;
+                testNums.erase(testNums.begin() + i);
+
+                if (isReportSafe(testNums)) {
+                    ++safeReports;
+                    break;
+                }
+            }
+        }
+
         ++lines;
     }
 
