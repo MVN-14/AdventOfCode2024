@@ -1,9 +1,7 @@
 #include <cctype>
 #include <fstream>
 #include <iostream>
-#include <iterator>
 #include <regex>
-#include <sstream>
 #include <string>
 #include <tuple>
 
@@ -17,6 +15,7 @@ std::tuple<int, int> parseIntsFromMul(std::string mul) {
     std::string num;
 
     num = mul.substr(openParen + 1, comma - openParen - 1);
+    std::cout << "Num :" << num << '\n';
     lhs = std::stoi(num);
 
     num = mul.substr(comma + 1, closeParen - comma - 1);
@@ -40,23 +39,33 @@ int main() {
         ++lines;
     }
 
-    std::regex pattern{"mul\\([0-9]+,[0-9]+\\)"};
+    std::regex pattern{"mul\\([0-9]+,[0-9]+\\)|do\\(\\)|don't\\(\\)"};
     std::sregex_iterator it(instructions.begin(), instructions.end(), pattern);
     std::sregex_iterator end;
 
+    bool doMul = true;
     for (auto i = it; i != end; ++i) {
         std::cout << "Match: " << (*i).str() << '\n';
-        std::tuple<int, int> res = parseIntsFromMul((*i).str());
+        if ((*i).str() == "do()") {
+            doMul = true;
+        } else if ((*i).str() == "don't()") {
+            doMul = false;
+        } else {
+            if (!doMul) {
+                continue;
+            }
+            std::tuple<int, int> res = parseIntsFromMul((*i).str());
 
-        int lhs = 0, rhs = 0;
-        lhs = std::get<0>(res);
-        rhs = std::get<1>(res);
+            int lhs = 0, rhs = 0;
+            lhs = std::get<0>(res);
+            rhs = std::get<1>(res);
 
-        //        std::stringstream ss((*i).str());
-        //        ss >> lhs;
-        //        ss >> rhs;
-        std::cout << "lhs: " << lhs << " rhs: " << rhs << '\n';
-        result += lhs * rhs;
+            //        std::stringstream ss((*i).str());
+            //        ss >> lhs;
+            //        ss >> rhs;
+            std::cout << "lhs: " << lhs << " rhs: " << rhs << '\n';
+            result += lhs * rhs;
+        }
     }
 
     std::cout << "Results of mul instructions: " << result << '\n';
